@@ -64,6 +64,10 @@ async def feishu_card(request: Request, background_tasks: BackgroundTasks):
     body = await request.body()
     data = json.loads(body)
 
+    # URL verification challenge
+    if data.get("type") == "url_verification":
+        return JSONResponse({"challenge": data["challenge"]})
+
     open_id = data.get("open_id", "")
     action = data.get("action", {})
     value = action.get("value", {})
