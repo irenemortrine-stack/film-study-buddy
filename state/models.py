@@ -18,6 +18,7 @@ class TheoryCard(BaseModel):
 
 class Session(BaseModel):
     state: str = "IDLE"
+    chat_id: Optional[str] = None
     film_title: Optional[str] = None
     original_review: str = ""
     keywords: list[str] = Field(default_factory=list)

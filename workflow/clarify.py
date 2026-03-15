@@ -33,7 +33,7 @@ async def handle_clarify(open_id: str, message: str, session: Session) -> Sessio
         )
         session.keywords = result.get("keywords", session.keywords)
         session.state = "SEARCHING"
-        await send_text(open_id, "好的，我去帮你找找相关的理论视角，稍等一下～")
+        await send_text(open_id, "好的，我去帮你找找相关的理论视角，稍等一下～", chat_id=session.chat_id or "")
     else:
         # Ask next question
         history = _format_history(session)
@@ -49,7 +49,7 @@ async def handle_clarify(open_id: str, message: str, session: Session) -> Sessio
         )
         session.clarifications.append(Clarification(question=question, answer=""))
         session.clarification_round += 1
-        await send_text(open_id, question)
+        await send_text(open_id, question, chat_id=session.chat_id or "")
 
     return session
 

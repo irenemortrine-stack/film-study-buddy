@@ -25,5 +25,5 @@ async def handle_select(open_id: str, theory_index: int, session: Session) -> Se
     session.state = "ANSWERING_QUESTIONS"
 
     intro = f"好，我们用「{theory.name}」来分析这部电影。\n\n我会问你几个问题，你来回答，最后整理成一篇长评。\n\n第一个问题："
-    await send_text(open_id, intro + session.essay_questions[0])
+    await send_text(open_id, intro + session.essay_questions[0], chat_id=session.chat_id or "")
     return session

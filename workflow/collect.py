@@ -26,7 +26,7 @@ async def handle_collect(open_id: str, message: str, session: Session) -> Sessio
     session.clarification_round = 1
     session.state = "CLARIFYING"
 
-    await send_text(open_id, question)
+    await send_text(open_id, question, chat_id=session.chat_id or "")
     return session
 
 

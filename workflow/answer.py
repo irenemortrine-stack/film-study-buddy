@@ -11,7 +11,7 @@ async def handle_answer(open_id: str, message: str, session: Session) -> Session
         next_q = session.essay_questions[session.current_question_index]
         idx = session.current_question_index + 1
         total = len(session.essay_questions)
-        await send_text(open_id, f"（{idx}/{total}）{next_q}")
+        await send_text(open_id, f"（{idx}/{total}）{next_q}", chat_id=session.chat_id or "")
     else:
         session.state = "REVIEWING_ESSAY"
         await _show_essay_preview(open_id, session)
@@ -24,4 +24,4 @@ async def _show_essay_preview(open_id: str, session: Session) -> None:
     for q, a in zip(session.essay_questions, session.essay_answers):
         lines.append(f"【{q}】\n{a}\n")
     lines.append("回复「确认」保存，或继续修改任意一条回答。")
-    await send_text(open_id, "\n".join(lines))
+    await send_text(open_id, "\n".join(lines), chat_id=session.chat_id or "")

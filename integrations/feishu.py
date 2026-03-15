@@ -25,15 +25,19 @@ async def _get_token() -> str:
     return _cached_token["token"]
 
 
-async def send_text(open_id: str, text: str) -> None:
+async def send_text(open_id: str, text: str, chat_id: str = "") -> None:
     import json
     token = await _get_token()
+    if chat_id:
+        receive_id_type, receive_id = "chat_id", chat_id
+    else:
+        receive_id_type, receive_id = "open_id", open_id
     async with httpx.AsyncClient() as client:
         await client.post(
-            f"{_MSG_URL}?receive_id_type=open_id",
+            f"{_MSG_URL}?receive_id_type={receive_id_type}",
             headers={"Authorization": f"Bearer {token}"},
             json={
-                "receive_id": open_id,
+                "receive_id": receive_id,
                 "msg_type": "text",
                 "content": json.dumps({"text": text}),
             },
@@ -55,7 +59,7 @@ async def upload_image(png_bytes: bytes) -> str:
     return data["data"]["image_key"]
 
 
-async def send_theory_cards(open_id: str, cards: list[dict], image_keys: list[str]) -> None:
+async def send_theory_cards(open_id: str, cards: list[dict], image_keys: list[str], chat_id: str = "") -> None:
     """Send interactive card with 3 theory options."""
     import json
     token = await _get_token()
@@ -102,11 +106,15 @@ async def send_theory_cards(open_id: str, cards: list[dict], image_keys: list[st
     }
 
     async with httpx.AsyncClient() as client:
+        if chat_id:
+            receive_id_type, receive_id = "chat_id", chat_id
+        else:
+            receive_id_type, receive_id = "open_id", open_id
         await client.post(
-            f"{_MSG_URL}?receive_id_type=open_id",
+            f"{_MSG_URL}?receive_id_type={receive_id_type}",
             headers={"Authorization": f"Bearer {token}"},
             json={
-                "receive_id": open_id,
+                "receive_id": receive_id,
                 "msg_type": "interactive",
                 "content": json.dumps(card_content),
             },

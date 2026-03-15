@@ -7,7 +7,7 @@ from integrations.feishu import send_text
 logger = logging.getLogger(__name__)
 
 
-async def route_message(open_id: str, message: str, message_id: str) -> None:
+async def route_message(open_id: str, message: str, message_id: str, chat_id: str = "") -> None:
     try:
         async with SessionLock(open_id):
             session = await get_session(open_id)
@@ -16,6 +16,9 @@ async def route_message(open_id: str, message: str, message_id: str) -> None:
             if message_id in session.processed_message_ids:
                 return
             session.processed_message_ids = (session.processed_message_ids + [message_id])[-50:]
+
+            if chat_id:
+                session.chat_id = chat_id
 
             session = await _dispatch(open_id, message, session)
             await save_session(open_id, session)
@@ -44,7 +47,7 @@ async def _dispatch(open_id: str, message: str, session: Session) -> Session:
             from workflow.collect import handle_collect
             return await handle_collect(open_id, message, session)
         else:
-            await send_text(open_id, "发「聊聊 + 你的观影感受」开始分析，例如：\n聊聊 女主角好压抑，家庭关系扭曲")
+            await send_text(open_id, "发「聊聊 + 你的观影感受」开始分析，例如：\n聊聊 女主角好压抑，家庭关系扭曲", chat_id=session.chat_id or "")
             return session
 
     if state == "CLARIFYING":
@@ -56,7 +59,7 @@ async def _dispatch(open_id: str, message: str, session: Session) -> Session:
         return session
 
     if state == "SELECTING_THEORY":
-        await send_text(open_id, "请点击上方卡片中的按钮选择一个理论视角～")
+        await send_text(open_id, "请点击上方卡片中的按钮选择一个理论视角～", chat_id=session.chat_id or "")
         return session
 
     if state == "ANSWERING_QUESTIONS":
@@ -72,7 +75,7 @@ async def _dispatch(open_id: str, message: str, session: Session) -> Session:
         from workflow.finalize import handle_finalize
         return await handle_finalize(open_id, message, session)
 
-    await send_text(open_id, "发「聊聊 + 你的观影感受」开始新的分析。")
+    await send_text(open_id, "发「聊聊 + 你的观影感受」开始新的分析。", chat_id=session.chat_id or "")
     return session
 
 

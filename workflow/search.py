@@ -69,5 +69,6 @@ async def handle_search(open_id: str, session: Session) -> Session:
         open_id,
         [c.model_dump() for c in theory_cards],
         image_keys,
+        chat_id=session.chat_id or "",
     )
     return session
