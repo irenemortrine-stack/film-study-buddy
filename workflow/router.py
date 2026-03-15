@@ -1,30 +1,39 @@
 """State machine router — dispatches messages to the right workflow handler."""
+import logging
 from state.store import get_session, save_session, SessionLock
 from state.models import Session
 from integrations.feishu import send_text
 
+logger = logging.getLogger(__name__)
+
 
 async def route_message(open_id: str, message: str, message_id: str) -> None:
-    async with SessionLock(open_id):
-        session = await get_session(open_id)
+    try:
+        async with SessionLock(open_id):
+            session = await get_session(open_id)
 
-        # Idempotency check
-        if message_id in session.processed_message_ids:
-            return
-        session.processed_message_ids = (session.processed_message_ids + [message_id])[-50:]
+            # Idempotency check
+            if message_id in session.processed_message_ids:
+                return
+            session.processed_message_ids = (session.processed_message_ids + [message_id])[-50:]
 
-        session = await _dispatch(open_id, message, session)
-        await save_session(open_id, session)
+            session = await _dispatch(open_id, message, session)
+            await save_session(open_id, session)
+    except Exception:
+        logger.exception("route_message failed for open_id=%s message_id=%s", open_id, message_id)
 
 
 async def route_card_action(open_id: str, theory_index: int) -> None:
-    async with SessionLock(open_id):
-        session = await get_session(open_id)
-        if session.state != "SELECTING_THEORY":
-            return
-        from workflow.select import handle_select
-        session = await handle_select(open_id, theory_index, session)
-        await save_session(open_id, session)
+    try:
+        async with SessionLock(open_id):
+            session = await get_session(open_id)
+            if session.state != "SELECTING_THEORY":
+                return
+            from workflow.select import handle_select
+            session = await handle_select(open_id, theory_index, session)
+            await save_session(open_id, session)
+    except Exception:
+        logger.exception("route_card_action failed for open_id=%s theory_index=%s", open_id, theory_index)
 
 
 async def _dispatch(open_id: str, message: str, session: Session) -> Session:

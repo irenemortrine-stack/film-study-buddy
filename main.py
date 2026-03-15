@@ -2,10 +2,13 @@
 import hashlib
 import hmac
 import json
+import logging
 import time
 
 from fastapi import FastAPI, Request, BackgroundTasks, Response
 from fastapi.responses import JSONResponse
+
+logger = logging.getLogger(__name__)
 
 from config import settings
 from workflow.router import route_message, route_card_action
@@ -46,7 +49,10 @@ async def feishu_message(request: Request, background_tasks: BackgroundTasks):
     message_id = msg.get("message_id", "")
     msg_type = msg.get("message_type", "")
 
+    logger.info("feishu message: open_id=%s msg_type=%s message_id=%s", open_id, msg_type, message_id)
+
     if msg_type != "text" or not open_id:
+        logger.warning("dropped: msg_type=%s open_id=%s", msg_type, open_id)
         return JSONResponse({"code": 0})
 
     content = json.loads(msg.get("content", "{}"))
