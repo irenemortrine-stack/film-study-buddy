@@ -41,6 +41,8 @@ async def feishu_message(request: Request, background_tasks: BackgroundTasks):
     # if sig and not _verify_feishu(ts, nonce, body, sig):
     #     return JSONResponse({"code": 1, "msg": "invalid signature"}, status_code=403)
 
+    logger.info("feishu raw payload keys: %s", list(data.keys()))
+
     event = data.get("event", {})
     msg = event.get("message", {})
     sender = event.get("sender", {})
@@ -48,18 +50,22 @@ async def feishu_message(request: Request, background_tasks: BackgroundTasks):
     open_id = sender.get("sender_id", {}).get("open_id", "")
     message_id = msg.get("message_id", "")
     msg_type = msg.get("message_type", "")
+    chat_id = msg.get("chat_id", "")
 
-    logger.info("feishu message: open_id=%s msg_type=%s message_id=%s", open_id, msg_type, message_id)
+    logger.info("feishu message: open_id=%s msg_type=%s message_id=%s chat_id=%s", open_id, msg_type, message_id, chat_id)
 
     if msg_type != "text" or not open_id:
         logger.warning("dropped: msg_type=%s open_id=%s", msg_type, open_id)
         return JSONResponse({"code": 0})
 
     content = json.loads(msg.get("content", "{}"))
-    text = content.get("text", "").strip()
+    raw_text = content.get("text", "")
+    # Strip @mention tags that appear in group messages (e.g. "@_user_1 " or "<at ...>...</at>")
+    import re
+    text = re.sub(r"@\S+\s*", "", raw_text).strip()
 
     if text:
-        background_tasks.add_task(route_message, open_id, text, message_id)
+        background_tasks.add_task(route_message, open_id, text, message_id, chat_id)
 
     # Must respond within 3s
     return JSONResponse({"code": 0})
