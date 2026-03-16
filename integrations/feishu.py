@@ -65,12 +65,14 @@ async def send_theory_cards(open_id: str, cards: list[dict], image_keys: list[st
     token = await _get_token()
 
     elements = []
-    for i, (card, img_key) in enumerate(zip(cards, image_keys)):
-        elements.append({
-            "tag": "img",
-            "img_key": img_key,
-            "alt": {"tag": "plain_text", "content": card["name"]},
-        })
+    for i, card in enumerate(cards):
+        img_key = image_keys[i] if i < len(image_keys) else None
+        if img_key:
+            elements.append({
+                "tag": "img",
+                "img_key": img_key,
+                "alt": {"tag": "plain_text", "content": card["name"]},
+            })
         elements.append({
             "tag": "div",
             "text": {
