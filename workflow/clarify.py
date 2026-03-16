@@ -4,9 +4,6 @@ from integrations.feishu import send_text
 from prompts.clarify_question import CLARIFY_QUESTION, SHOULD_STOP_CLARIFYING, FINALIZE_KEYWORDS
 from state.models import Clarification, Session
 
-MAX_ROUNDS = 3
-
-
 async def handle_clarify(open_id: str, message: str, session: Session) -> Session:
     # Record user's answer to the last question
     last_question = session.clarifications[-1].question if session.clarifications else ""
@@ -18,7 +15,7 @@ async def handle_clarify(open_id: str, message: str, session: Session) -> Sessio
         # Find the pending question (stored without answer)
         session.clarifications.append(Clarification(question=last_question, answer=message))
 
-    should_stop = session.clarification_round >= MAX_ROUNDS or await _wants_to_stop(message)
+    should_stop = await _wants_to_stop(message)
 
     if should_stop:
         # Finalize keywords
