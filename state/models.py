@@ -24,6 +24,8 @@ class Session(BaseModel):
     keywords: list[str] = Field(default_factory=list)
     clarifications: list[Clarification] = Field(default_factory=list)
     clarification_round: int = 0
+    current_dimension: Optional[str] = None
+    explored_dimensions: list[str] = Field(default_factory=list)
     theory_cards: list[TheoryCard] = Field(default_factory=list)
     selected_theory: Optional[TheoryCard] = None
     essay_questions: list[str] = Field(default_factory=list)
