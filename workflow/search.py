@@ -38,6 +38,9 @@ async def handle_search(open_id: str, session: Session) -> Session:
             review_results=_fmt(review_results),
         ),
     )
+    # Ensure cards_data is a list
+    if isinstance(cards_data, dict):
+        cards_data = cards_data.get("cards", list(cards_data.values())[0] if cards_data else [])
 
     # Build TheoryCard objects + render images
     theory_cards: list[TheoryCard] = []

@@ -23,8 +23,8 @@ async def chat(system: str, user: str, temperature: float = 0.7) -> str:
 async def chat_json(system: str, user: str) -> dict | list:
     """Call DeepSeek and parse JSON response."""
     text = await chat(system, user, temperature=0.3)
-    # Strip markdown code fences if present
+    # Strip markdown code fences if present (```json ... ``` or ``` ... ```)
     if text.startswith("```"):
         text = text.split("\n", 1)[1]
         text = text.rsplit("```", 1)[0]
-    return json.loads(text)
+    return json.loads(text.strip())
