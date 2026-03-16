@@ -85,6 +85,8 @@ async def feishu_card(request: Request, background_tasks: BackgroundTasks):
     value = action.get("value", {})
     theory_index = value.get("theory_index")
 
+    logger.info("card webhook: keys=%s open_id=%s theory_index=%s", list(data.keys()), open_id, theory_index)
+
     if open_id and theory_index is not None:
         background_tasks.add_task(route_card_action, open_id, int(theory_index))
 
