@@ -1,4 +1,5 @@
 """COLLECTING_REVIEW: extract keywords from initial review."""
+# v2
 from integrations.deepseek import chat, chat_json
 from integrations.feishu import send_text
 from prompts.extract_keywords import EXTRACT_KEYWORDS
