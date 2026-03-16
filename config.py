@@ -7,7 +7,6 @@ class Settings(BaseSettings):
     feishu_app_secret: str
     feishu_verification_token: str
     tavily_api_key: str
-    serper_api_key: str
     notion_token: str
     notion_database_id: str
     redis_url: str = "redis://localhost:6379"
